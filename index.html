@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Netflix Viewer · Clone</title>
+  <!-- Font Awesome for icons (optional, for chevrons and profile) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #141414;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    /* ----- NAVIGATION BAR ----- */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 4%;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+      z-index: 100;
+      transition: background-color 0.3s ease;
+    }
+
+    .navbar.scrolled {
+      background-color: #141414;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 2.5rem;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #e50914;
+      text-transform: uppercase;
+      cursor: default;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.8rem;
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: #e5e5e5;
+    }
+
+    .nav-links span {
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .nav-links span:hover {
+      color: #b3b3b3;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      font-size: 1.2rem;
+    }
+
+    .nav-right i {
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .nav-right i:hover {
+      color: #b3b3b3;
+    }
+
+    .profile-icon {
+      background-color: #e50914;
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    /* ----- HERO BANNER ----- */
+    .hero {
+      position: relative;
+      height: 85vh;
+      width: 100%;
+      background-image: url('https://images.unsplash.com/photo-1574375927938-d5a98e8efe85?q=80&w=2069&auto=format&fit=crop');
+      background-size: cover;
+      background-position: center 20%;
+      display: flex;
+      align-items: center;
+      padding-left: 4%;
+      margin-bottom: -60px; /* pull next section up slightly for gradient overlap */
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.6) 100%),
+                  linear-gradient(to top, #141414 0%, transparent 30%);
+      z-index: 1;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 600px;
+      color: #fff;
+    }
+
+    .hero-title {
+      font-size: 4rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 0.8rem;
+      text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+    }
+
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #ddd;
+      margin-bottom: 1.2rem;
+    }
+
+    .match-score {
+      color: #46d369;
+      font-weight: 700;
+    }
+
+    .badge {
+      border: 1px solid #aaa;
+      padding: 0.1rem 0.5rem;
+      font-size: 0.75rem;
+      border-radius: 3px;
+      color: #ddd;
+    }
+
+    .hero-description {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #e5e5e5;
+      margin-bottom: 2rem;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
+      max-width: 550px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 4px;
+      padding: 0.75rem 1.8rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-play {
+      background-color: #fff;
+      color: #000;
+    }
+
+    .btn-play:hover {
+      background-color: #e6e6e6;
+    }
+
+    .btn-info {
+      background-color: rgba(109, 109, 110, 0.7);
+      color: #fff;
+    }
+
+    .btn-info:hover {
+      background-color: rgba(109, 109, 110, 0.5);
+    }
+
+    /* ----- CATEGORY ROWS (Netflix style) ----- */
+    .rows-container {
+      position: relative;
+      z-index: 5;
+      padding: 0 0 4rem 0;
+      margin-top: 20px;
+    }
+
+    .row {
+      margin-bottom: 3rem;
+      padding-left: 4%;
+    }
+
+    .row-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8rem;
+      padding-right: 4%;
+    }
+
+    .row-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #e5e5e5;
+    }
+
+    .row-explore {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #b3b3b3;
+      opacity: 0;
+      transition: opacity 0.2s;
+      cursor: pointer;
+    }
+
+    .row:hover .row-explore {
+      opacity: 1;
+    }
+
+    .row-explore:hover {
+      color: #fff;
+    }
+
+    .row-posters {
+      display: flex;
+      overflow-x: auto;
+      overflow-y: hidden;
+      gap: 8px;
+      padding: 0.5rem 0 1.5rem 0;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: #444 #141414;
+    }
+
+    .row-posters::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .row-posters::-webkit-scrollbar-thumb {
+      background-color: #444;
+      border-radius: 10px;
+    }
+
+    .row-posters::-webkit-scrollbar-track {
+      background-color: #141414;
+    }
+
+    .poster-card {
+      flex: 0 0 auto;
+      width: 220px;
+      border-radius: 6px;
+      overflow: hidden;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      cursor: pointer;
+      background-color: #1f1f1f;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .poster-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+      z-index: 10;
+    }
+
+    .poster-card img {
+      width: 100%;
+      height: 130px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .poster-info {
+      padding: 0.7rem 0.6rem 0.8rem 0.6rem;
+    }
+
+    .poster-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .poster-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.7rem;
+      color: #46d369;
+      font-weight: 600;
+    }
+
+    .poster-meta .year {
+      color: #b3b3b3;
+      font-weight: 400;
+    }
+
+    .poster-meta .rating {
+      border: 1px solid #777;
+      padding: 0 0.25rem;
+      border-radius: 2px;
+      color: #ddd;
+      font-size: 0.65rem;
+    }
+
+    /* ----- FOOTER (minimal) ----- */
+    .footer {
+      padding: 2rem 4%;
+      color: #777;
+      font-size: 0.8rem;
+      border-top: 1px solid #222;
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    /* Responsive touches */
+    @media (max-width: 900px) {
+      .hero-title {
+        font-size: 2.8rem;
+      }
+      .hero-description {
+        font-size: 1rem;
+      }
+      .nav-links {
+        display: none;
+      }
+      .poster-card {
+        width: 170px;
+      }
+      .poster-card img {
+        height: 100px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .hero {
+        height: 70vh;
+        background-position: center 30%;
+      }
+      .hero-title {
+        font-size: 2rem;
+      }
+      .hero-buttons .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+      }
+      .row-title {
+        font-size: 1.1rem;
+      }
+      .poster-card {
+        width: 140px;
+      }
+      .poster-card img {
+        height: 85px;
+      }
+      .poster-title {
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-left">
+      <div class="logo">NETFLIX</div>
+      <div class="nav-links">
+        <span>Home</span>
+        <span>TV Shows</span>
+        <span>Movies</span>
+        <span>New & Popular</span>
+        <span>My List</span>
+      </div>
+    </div>
+    <div class="nav-right">
+      <i class="fas fa-search"></i>
+      <i class="fas fa-bell"></i>
+      <div class="profile-icon">U</div>
+    </div>
+  </nav>
+
+  <!-- Hero Banner -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">Stranger Things</h1>
+      <div class="hero-meta">
+        <span class="match-score">98% Match</span>
+        <span>2025</span>
+        <span class="badge">TV-14</span>
+        <span>4 Seasons</span>
+      </div>
+      <p class="hero-description">
+        When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces and one strange little girl.
+      </p>
+      <div class="hero-buttons">
+        <button class="btn btn-play"><i class="fas fa-play"></i> Play</button>
+        <button class="btn btn-info"><i class="fas fa-info-circle"></i> More Info</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Category Rows -->
+  <div class="rows-container">
+
+    <!-- Row 1: Trending Now -->
+    <div class="row">
+      <div class="row-header">
+        <h2 class="row-title">Trending Now</h2>
+        <span class="row-explore">Explore all <i class="fas fa-chevron-right"></i></span>
+      </div>
+      <div class="row-posters">
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1541963463532-d68292c34b19?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">The Witcher</div>
+            <div class="poster-meta"><span>97% Match</span><span class="year">2025</span><span class="rating">TV-MA</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">Money Heist</div>
+            <div class="poster-meta"><span>95% Match</span><span class="year">2024</span><span class="rating">TV-MA</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">The Crown</div>
+            <div class="poster-meta"><span>92% Match</span><span class="year">2023</span><span class="rating">TV-14</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1585951237318-9ea5e175b891?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">Squid Game</div>
+            <div class="poster-meta"><span>99% Match</span><span class="year">2024</span><span class="rating">TV-MA</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">Dark</div>
+            <div class="poster-meta"><span>94% Match</span><span class="year">2022</span><span class="rating">TV-MA</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">Breaking Bad</div>
+            <div class="poster-meta"><span>99% Match</span><span class="year">2013</span><span class="rating">TV-MA</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1543536448-d209d2d13a1c?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">Wednesday</div>
+            <div class="poster-meta"><span>96% Match</span><span class="year">2025</span><span class="rating">TV-14</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Popular on Netflix -->
+    <div class="row">
+      <div class="row-header">
+        <h2 class="row-title">Popular on Netflix</h2>
+        <span class="row-explore">Explore all <i class="fas fa-chevron-right"></i></span>
+      </div>
+      <div class="row-posters">
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">The Queen's Gambit</div>
+            <div class="poster-meta"><span>93% Match</span><span class="year">2020</span><span class="rating">TV-MA</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">Bridgerton</div>
+            <div class="poster-meta"><span>91% Match</span><span class="year">2024</span><span class="rating">TV-MA</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1535016120720-40c646be5580?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">Ozark</div>
+            <div class="poster-meta"><span>95% Match</span><span class="year">2022</span><span class="rating">TV-MA</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1541560052-77ec1bbc09f7?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">The Umbrella Academy</div>
+            <div class="poster-meta"><span>89% Match</span><span class="year">2024</span><span class="rating">TV-14</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1505682634904-d7c8d95cdc50?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">You</div>
+            <div class="poster-meta"><span>90% Match</span><span class="year">2023</span><span class="rating">TV-MA</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1555431189-0a2e4b0a6f4c?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">Lupin</div>
+            <div class="poster-meta"><span>88% Match</span><span class="year">2023</span><span class="rating">TV-MA</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: New Releases -->
+    <div class="row">
+      <div class="row-header">
+        <h2 class="row-title">New Releases</h2>
+        <span class="row-explore">Explore all <i class="fas fa-chevron-right"></i></span>
+      </div>
+      <div class="row-posters">
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1533488765986-dfa2a9939acd?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">3 Body Problem</div>
+            <div class="poster-meta"><span>94% Match</span><span class="year">2024</span><span class="rating">TV-MA</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1512070679279-8988d32161be?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">The Gentlemen</div>
+            <div class="poster-meta"><span>92% Match</span><span class="year">2024</span><span class="rating">TV-MA</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1522869635100-9f4c5e86c1e6?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">Ripley</div>
+            <div class="poster-meta"><span>89% Match</span><span class="year">2024</span><span class="rating">TV-MA</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1524253482453-3fed8d2fe12b?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">Avatar: The Last Airbender</div>
+            <div class="poster-meta"><span>85% Match</span><span class="year">2024</span><span class="rating">TV-14</span></div>
+          </div>
+        </div>
+        <div class="poster-card">
+          <img src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1000&auto=format&fit=crop" alt="Poster">
+          <div class="poster-info">
+            <div class="poster-title">Damsel</div>
+            <div class="poster-meta"><span>79% Match</span><span class="year">2024</span><span class="rating">PG-13</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>Netflix Viewer Clone · Built for demonstration purposes only.</p>
+    <p style="margin-top: 0.5rem; color: #555;">All images are from Unsplash & used as placeholders.</p>
+  </div>
+
+  <script>
+    // Simple scroll effect for navbar background
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+
+    // Optional: smooth horizontal scroll on row explore click (simulated)
+    const exploreSpans = document.querySelectorAll('.row-explore');
+    exploreSpans.forEach((span) => {
+      span.addEventListener('click', (e) => {
+        const row = span.closest('.row');
+        const posters = row.querySelector('.row-posters');
+        if (posters) {
+          posters.scrollBy({ left: 300, behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
